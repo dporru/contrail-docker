@@ -1,4 +1,6 @@
-FROM 10.84.34.155:5000/contrail-base-os-images-ubuntu:16.04.2
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
+#FROM contrail-repo-ubuntu16.04:4.0.0.0-3017
 MAINTAINER Juniper Contrail <contrail@juniper.net>
 ARG CONTRAIL_REPO_URL
 ARG CONTRAIL_ANSIBLE_TAR
@@ -12,16 +14,11 @@ ENV OS=$OS
 ARG DEBIAN_FRONTEND=noninteractive
 ARG apt_install="apt-get install -yq --force-yes --no-install-recommends --no-install-suggests "
 ENV ANSIBLE_INVENTORY="all-in-one"
-ARG PACKAGES_ANSIBLE="ansible iproute2 python-configparser vim ssh-client iputils-ping less sudo"
+ARG PACKAGES_ANSIBLE="ansible iproute2 python-configparser vim ssh-client iputils-ping less sudo python-setuptools"
 ARG CONTRAIL_REPO_MIRROR_SNAPSHOT=04042017
 COPY contrail-ubuntu-mirror.key /
 RUN apt-key add /contrail-ubuntu-mirror.key;\
-    echo > /etc/apt/sources.list ;\
-    echo "deb $CONTRAIL_REPO_URL ./" > /etc/apt/sources.list.d/contrail-local.list;\
-    echo "deb [arch=amd64] http://10.84.34.201:8080/xenial/$CONTRAIL_REPO_MIRROR_SNAPSHOT/ xenial main universe" > /etc/apt/sources.list.d/xenial.list ;\
-    echo "deb [arch=amd64] http://10.84.34.201:8080/xenial-updates/$CONTRAIL_REPO_MIRROR_SNAPSHOT/ xenial-updates main universe" > /etc/apt/sources.list.d/xenial-updates.list ;\
-    echo "deb [arch=amd64] http://10.84.34.201:8080/xenial-security/$CONTRAIL_REPO_MIRROR_SNAPSHOT/ xenial-security main universe" > /etc/apt/sources.list.d/xenial-security.list ;\
-    echo "deb [arch=all]  http://10.84.34.201:8080/contrail-ansible-packages-xenial/01172017/ xenial main" > /etc/apt/sources.list.d/contrail-ansible-packages-xenial.list
+    echo "deb $CONTRAIL_REPO_URL ./" > /etc/apt/sources.list.d/contrail-local.list;
 RUN var1=$(echo $CONTRAIL_REPO_URL | sed -r 's#http[s]?://([[:digit:]\.]+):.*#\1#') ; \
     echo "Package: *\nPin: origin \"$var1\"\nPin-Priority: 1001" > /etc/apt/preferences
 RUN echo "APT::Get::AllowUnauthenticated \"true\";" > /etc/apt/apt.conf.d/99allowunauth
