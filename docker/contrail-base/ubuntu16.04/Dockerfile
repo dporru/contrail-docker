@@ -17,14 +17,16 @@ ENV ANSIBLE_INVENTORY="all-in-one"
 ARG PACKAGES_ANSIBLE="iproute2 python-configparser vim ssh-client iputils-ping less sudo python-setuptools"
 ARG CONTRAIL_REPO_MIRROR_SNAPSHOT=04042017
 COPY contrail-ubuntu-mirror.key /
+RUN apt-get update && \
+    apt-get install -y python-pip curl;
 RUN apt-key add /contrail-ubuntu-mirror.key;\
-    echo "deb $CONTRAIL_REPO_URL ./" > /etc/apt/sources.list.d/contrail-local.list;
+    echo "deb $CONTRAIL_REPO_URL ./" > /etc/apt/sources.list.d/contrail-local.list && \
+    echo "deb http://www.apache.org/dist/cassandra/debian 310x main" > /etc/apt/sources.list.d/cassandra.sources.list && \
+    curl https://www.apache.org/dist/cassandra/KEYS | apt-key add -;
 RUN var1=$(echo $CONTRAIL_REPO_URL | sed -r 's#http[s]?://([[:digit:]\.]+):.*#\1#') ; \
     echo "Package: *\nPin: origin \"$var1\"\nPin-Priority: 1001" > /etc/apt/preferences
 RUN echo "APT::Get::AllowUnauthenticated \"true\";" > /etc/apt/apt.conf.d/99allowunauth
-RUN apt-get update && \
-    apt-get install -y python-pip  && \
-    pip install 'ansible>=2.3.0,<2.4.0'
+RUN pip install 'ansible>=2.3.0,<2.4.0';
 RUN apt-get update -qy && \
     $apt_install $PACKAGES_ANSIBLE && \
     apt-get autoremove -yq  &&\
